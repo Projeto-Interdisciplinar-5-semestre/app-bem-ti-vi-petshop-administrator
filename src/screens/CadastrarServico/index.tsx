@@ -32,6 +32,57 @@ const CadastrarServico = ({ titulo = "CADASTRAR" }: { titulo?: string }) => {
     }
   };
 
+  const handleCadastrarServico = async () => {
+    if (!nomeServico || !precoServico || !duracaoEstimada || !descricaoServico || !imagem) {
+      Alert.alert('Atenção', 'Por favor, preencha todos os campos e selecione uma imagem');
+      return;
+    }
+  
+    try {
+      const servico = {
+        name: nomeServico,
+        price: parseFloat(precoServico),
+        estimated_duration: duracaoEstimada,
+        description: descricaoServico,
+      };
+  
+      const formData = new FormData();
+  
+      formData.append('service', {
+        string: JSON.stringify(servico),
+        name: 'service',
+        type: 'application/json',
+      } as any);
+  
+      formData.append('file', {
+        uri: imagem,
+        name: 'imagem.jpg',
+        type: 'image/jpeg',
+      } as any);
+  
+      const response = await fetch('http://URL:8080/service/inserir', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (response.ok) {
+        Alert.alert('Sucesso', 'Serviço cadastrado com sucesso!');
+        setNomeServico('');
+        setPrecoServico('');
+        setDuracaoEstimada('');
+        setDescricaoServico('');
+        setImagem(null);
+      } else {
+        const errorData = await response.json();
+        console.error('Erro no cadastro:', errorData);
+        Alert.alert('Erro', errorData.message || 'Erro ao cadastrar serviço');
+      }
+    } catch (error) {
+      console.error('Erro no cadastro:', error);
+      Alert.alert('Erro', 'Erro de rede ou erro interno.');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView 
@@ -91,7 +142,7 @@ const CadastrarServico = ({ titulo = "CADASTRAR" }: { titulo?: string }) => {
           <Text style={styles.label}>Duração Estimada</Text>
           <TextInput
             style={styles.inputField}
-            placeholder="Ex: 1 hora, 30 minutos, etc."
+            placeholder="Ex: 03:30:00"
             placeholderTextColor="#999"
             value={duracaoEstimada}
             onChangeText={setDuracaoEstimada}
@@ -130,7 +181,7 @@ const CadastrarServico = ({ titulo = "CADASTRAR" }: { titulo?: string }) => {
 
         {/* Submit Button */}
         <View style={styles.submitButtonWrapper}>
-          <TouchableOpacity style={styles.submitButton}>
+          <TouchableOpacity style={styles.submitButton} onPress={handleCadastrarServico}>
             <Text style={styles.submitButtonText}>CADASTRAR SERVIÇO</Text>
           </TouchableOpacity>
         </View>
