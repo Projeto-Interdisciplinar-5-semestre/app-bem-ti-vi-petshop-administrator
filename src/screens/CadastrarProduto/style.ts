@@ -226,7 +226,14 @@ const styles = StyleSheet.create({
     color: '#333',
     fontFamily: 'Montserrat-Medium',
     marginTop: 2
-  }
+  },
+  imagePreview: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    resizeMode: 'contain',
+    marginTop: 8,
+  },
 });
 
 export default styles;

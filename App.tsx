@@ -8,7 +8,7 @@ import {
   Montserrat_900Black // Adicione esta importação
 } from '@expo-google-fonts/montserrat';
 import * as SplashScreen from 'expo-splash-screen';
-import { useCallback, useEffect } from 'react';
+import React,{ useCallback, useEffect } from 'react';
 import { View } from 'react-native';
 import CadastrarProduto from './src/screens/CadastrarProduto';
 

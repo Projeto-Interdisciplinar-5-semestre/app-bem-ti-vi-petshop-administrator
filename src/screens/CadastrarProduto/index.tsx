@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, TextInput, Alert, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, TextInput, Alert, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import styles from './style';
@@ -45,6 +45,63 @@ const CadastrarProduto = ({ titulo = "CADASTRAR" }: { titulo?: string }) => {
       setImagem(result.assets[0].uri);
     }
   };
+  const handleCadastrarProduto = async () => {
+    if (!nomeProduto || !valorProduto || !categoria || !descricao || !imagem) {
+      Alert.alert('Atenção', 'Por favor, preencha todos os campos e selecione uma imagem');
+      return;
+    }
+  
+    try {
+      const produto = {
+        name: nomeProduto,
+        price: parseFloat(valorProduto),
+        categories: [
+          { id: "10c65c75-d05b-4b58-8a6a-c29d53f7b1ea" }  // mesmo que só uma, tem que estar em array
+        ],
+        description: descricao,
+      };
+  
+      const formData = new FormData();
+  
+      // Envia o JSON como string
+      formData.append('product', {
+        string: JSON.stringify(produto),
+        name: 'product', // importante para compatibilidade
+        type: 'application/json',
+      } as any);
+  
+      // Envia a imagem
+      formData.append('file', {
+        uri: imagem,
+        name: 'imagem.jpg',
+        type: 'image/jpeg',
+      } as any);
+  
+      const response = await fetch('http://192.168.0.2:8080/produto/inserir', {
+        method: 'POST',
+        body: formData,
+        // Não definir headers aqui! Deixe o fetch cuidar do Content-Type
+      });
+  
+      if (response.ok) {
+        Alert.alert('Sucesso', 'Produto cadastrado com sucesso!');
+        setNomeProduto('');
+        setValorProduto('');
+        setCategoria('');
+        setDescricao('');
+        setImagem(null);
+      } else {
+        const errorData = await response.json();
+        console.error('Erro no cadastro:', errorData);
+        Alert.alert('Erro', errorData.message || 'Erro ao cadastrar produto');
+      }
+    } catch (error) {
+      console.error('Erro no cadastro:', error);
+      Alert.alert('Erro', 'Erro de rede ou erro interno.');
+    }
+  };
+  
+  
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -130,12 +187,19 @@ const CadastrarProduto = ({ titulo = "CADASTRAR" }: { titulo?: string }) => {
             ]} 
             onPress={selecionarImagem}
           >
-            <Text style={[
-              styles.imagePickerText,
-              imagem ? styles.imagePickerTextActive : null
-            ]}>
-              {imagem ? 'Imagem selecionada (clique para alterar)' : 'Selecione uma imagem'}
-            </Text>
+            {imagem ? (
+              <Image 
+                source={{ uri: imagem }} 
+                style={styles.imagePreview}
+              />
+            ) : (
+              <Text style={[
+                styles.imagePickerText,
+                imagem ? styles.imagePickerTextActive : null
+              ]}>
+                {imagem ? 'Imagem selecionada (clique para alterar)' : 'Selecione uma imagem'}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -153,8 +217,11 @@ const CadastrarProduto = ({ titulo = "CADASTRAR" }: { titulo?: string }) => {
 
         {/* Submit Button */}
         <View style={styles.submitButtonWrapper}>
-          <TouchableOpacity style={styles.submitButton}>
-            <Text style={styles.submitButtonText}>CADASTRAR</Text>
+          <TouchableOpacity 
+            style={styles.submitButton}
+            onPress={handleCadastrarProduto}
+          >
+              <Text style={styles.submitButtonText}>CADASTRAR</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
