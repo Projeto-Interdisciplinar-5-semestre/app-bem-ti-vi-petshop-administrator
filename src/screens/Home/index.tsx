@@ -24,8 +24,9 @@ export const Home = () => {
             <Button text="Gerenciar categoria" onPress={() => navigate("ManageCategory")} />
             <Button text="Pesquisar categoria" onPress={() => navigate("SearchCategory")} />
 
-            {/* Admin Profile Button */}
+            {/* Admin Buttons */}
             <Button text="Perfil do Administrador" onPress={() => navigate("ShowProfile")} />
+            <Button text="Lista de Administradores" onPress={() => navigate("ListAdm")} />
 
             {/* Login Button */}
             <Button text="Login" onPress={() => navigate("Login")} />
