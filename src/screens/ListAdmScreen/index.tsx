@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ScrollView, Text, TouchableOpacity, Image } from "react-native";
+import { View, ScrollView, Text, TouchableOpacity, Image, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { styles } from "./style";
 
@@ -19,12 +19,55 @@ export const ListAdmScreen = () => {
         },
     ];
 
+    const handleDisable = (adminName) => {
+        Alert.alert(
+            "Desabilitar Administrador",
+            `Deseja desabilitar o administrador ${adminName}?`,
+            [
+                {
+                    text: "Cancelar",
+                    style: "cancel"
+                },
+                { 
+                    text: "Desabilitar", 
+                    onPress: () => {
+                        // Lógica para desabilitar o administrador
+                        console.log(`Administrador ${adminName} desabilitado`);
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleDelete = (adminName) => {
+        Alert.alert(
+            "Excluir Administrador",
+            `Deseja excluir permanentemente o administrador ${adminName}?`,
+            [
+                {
+                    text: "Cancelar",
+                    style: "cancel"
+                },
+                { 
+                    text: "Excluir", 
+                    onPress: () => {
+                        // Lógica para excluir o administrador
+                        console.log(`Administrador ${adminName} excluído`);
+                    },
+                    style: "destructive"
+                }
+            ]
+        );
+    };
+
     return (
         <ScrollView style={styles.safeArea} contentContainerStyle={styles.scrollContent}>
+            {/* Header with Back Button */}
 
-            {/* Title */}
-            <View style={styles.greetingContainer}>
+            {/* Title Section with Added Spacing */}
+            <View style={[styles.greetingContainer, { marginTop: 30 }]}>
                 <Text style={styles.greetingText}>Administradores Cadastrados</Text>
+                <Text style={styles.subtitle}>Gerencie os administradores do sistema</Text>
             </View>
 
             {/* Admin List */}
@@ -34,16 +77,22 @@ export const ListAdmScreen = () => {
                         <Image source={admin.photo} style={styles.adminImage} />
                         <Text style={styles.adminName}>{admin.name}</Text>
                         <View style={styles.adminActions}>
-                            <TouchableOpacity>
+                            <TouchableOpacity 
+                                style={styles.actionButton}
+                                onPress={() => handleDisable(admin.name)}
+                            >
                                 <Image 
                                     source={require('../../assets/images/desabilitar.png')} 
-                                    style={styles.actionIcon} 
+                                    style={[styles.actionIcon, { width: 40, height: 40, marginLeft: 30 }]} 
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity>
+                            <TouchableOpacity 
+                                style={[styles.actionButton]}
+                                onPress={() => handleDelete(admin.name)}
+                            >
                                 <Image 
                                     source={require('../../assets/images/deletar.png')} 
-                                    style={styles.actionIcon} 
+                                    style={[styles.actionIcon, { width: 40, height: 40 }]} 
                                 />
                             </TouchableOpacity>
                         </View>
