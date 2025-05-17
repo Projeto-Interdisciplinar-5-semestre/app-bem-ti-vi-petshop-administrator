@@ -28,6 +28,7 @@ export const Home = () => {
             <Button text="Perfil do Administrador" onPress={() => navigate("ShowProfile")} />
             <Button text="Lista de Administradores" onPress={() => navigate("ListAdm")} />
 
+
             {/* Login Button */}
             <Button text="Login" onPress={() => navigate("Login")} />
         </View>
