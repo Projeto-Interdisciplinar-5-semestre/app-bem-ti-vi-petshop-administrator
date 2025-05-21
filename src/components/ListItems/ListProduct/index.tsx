@@ -5,12 +5,15 @@ import { InputItem } from "../InputItems/InputItem"
 import { ButtonItem } from "../InputItems/ButtonItem"
 
 import { styles } from "../style"
+import { useNavigation } from '@react-navigation/native';
+import { NavigationProps } from '../../../routes/index';
 
 export const ListProduct = (props: any) => {
     return (
         <View style={styles.itemContainer}>
             {props.filteredItems.map((item: any) => (
                 <ItemService
+                    key={item.id}
                     id={item.id}
                     name={item.name}
                     category={item.category}
@@ -22,6 +25,8 @@ export const ListProduct = (props: any) => {
 }
 
 export const ItemService = (props: any) => {
+    const { navigate } = useNavigation<NavigationProps>();
+
     return (
         <View key={props.id} style={styles.card}>
             <View style={styles.info}>
@@ -32,7 +37,7 @@ export const ItemService = (props: any) => {
 
             <View style={styles.actions}>
                 <ButtonItem source={require('../../../assets/images/olhos.png')} />
-                <ButtonItem source={require('../../../assets/images/configuracao.png')} />
+                <ButtonItem source={require('../../../assets/images/configuracao.png')} onPress={() => navigate('ManageProduct', {id:props.id})} />
             </View>
         </View>
     )

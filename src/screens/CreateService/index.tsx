@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Alert, ScrollView, SafeAreaView } from 'react-native';
-import ImagePicker from 'expo-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 import { Title } from '../../components/Title';
 import { NavigationBar } from '../../components/NavigationBar';
@@ -8,6 +8,8 @@ import { Button } from '../../components/Button';
 import { FormService } from '../../components/Forms/FormService';
 
 import { styles } from './style';
+
+import { postService } from '../../api/service/create/createService';
 
 export const CreateService = () => {
     const [nomeServico, setNomeServico] = useState<string>('');
@@ -35,55 +37,28 @@ export const CreateService = () => {
             setImagem(result.assets[0].uri);
         }
     };
-
-    const handleCadastrarServico = async () => {
-        if (!nomeServico || !precoServico || !duracaoEstimada || !descricaoServico || !imagem) {
-            Alert.alert('Atenção', 'Por favor, preencha todos os campos e selecione uma imagem');
-            return;
-        }
+    
+    const handlePost = async () => {
+        const servico = {
+            name: nomeServico,
+            price: precoServico,
+            estimated_duration: duracaoEstimada,
+            description: descricaoServico,
+        };
 
         try {
-            const servico = {
-                name: nomeServico,
-                price: parseFloat(precoServico),
-                estimated_duration: duracaoEstimada,
-                description: descricaoServico,
-            };
-
-            const formData = new FormData();
-
-            formData.append('service', {
-                string: JSON.stringify(servico),
-                name: 'service',
-                type: 'application/json',
-            } as any);
-
-            formData.append('file', {
-                uri: imagem,
-                name: 'imagem.jpg',
-                type: 'image/jpeg',
-            } as any);
-
-            const response = await fetch('http://URL:8080/service/inserir', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (response.ok) {
-                Alert.alert('Sucesso', 'Serviço cadastrado com sucesso!');
-                setNomeServico('');
-                setPrecoServico('');
-                setDuracaoEstimada('');
-                setDescricaoServico('');
-                setImagem(null);
-            } else {
-                const errorData = await response.json();
-                console.error('Erro no cadastro:', errorData);
-                Alert.alert('Erro', errorData.message || 'Erro ao cadastrar serviço');
+            const success = await postService(servico, imagem);
+            if (success){
+                setNomeServico('')
+                setPrecoServico('')
+                setDuracaoEstimada('')
+                setDescricaoServico('')
+                setImagem(null)
+                Alert.alert('Sucesso!', 'O serviço foi cadastrado.')
             }
         } catch (error) {
-            console.error('Erro no cadastro:', error);
-            Alert.alert('Erro', 'Erro de rede ou erro interno.');
+            console.error('POST request failed:', error);
+            Alert.alert('Erro', 'Não foi possível cadastrar o serviço.');
         }
     };
 
@@ -125,11 +100,11 @@ export const CreateService = () => {
                 />
 
                 <View style={styles.buttonsContainer}>
-                    <Button icon={require('../../assets/icons/add.png')} text="CADASTRAR SERVIÇO" color="#006316" action={handleCadastrarServico} />
+                    <Button icon={require('../../assets/icons/add.png')} text="CADASTRAR SERVIÇO" color="#006316" action={handlePost} />
                 </View>
             </ScrollView>
 
-            <NavigationBar />
+            <NavigationBar initialTab='servicos'/>
         </SafeAreaView>
     );
 };

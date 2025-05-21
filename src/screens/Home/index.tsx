@@ -12,15 +12,15 @@ export const Home = () => {
     return (
         <View style={styles.screen}>
             <Button text="Cadastrar produto" screen={() => navigate("CreateProduct")} />
-            <Button text="Gerenciar produto" screen={() => navigate("ManageProduct")} />
+            {/* <Button text="Gerenciar produto" screen={() => navigate("ManageProduct")} /> */}
             <Button text="Pesquisar produto" screen={() => navigate("SearchProduct")} />
 
             <Button text="Cadastrar serviço" screen={() => navigate("CreateService")} />
-            <Button text="Gerenciar serviço" screen={() => navigate("ManageService")} />
+            {/* <Button text="Gerenciar serviço" screen={() => navigate("ManageService")} /> */}
             <Button text="Pesquisar serviço" screen={() => navigate("SearchService")} />
 
             <Button text="Cadastrar categoria" screen={() => navigate("CreateCategory")} />
-            <Button text="Gerenciar categoria" screen={() => navigate("ManageCategory")} />
+            {/* <Button text="Gerenciar categoria" screen={() => navigate("ManageCategory")} /> */}
             <Button text="Pesquisar categoria" screen={() => navigate("SearchCategory")} />
 
             <Button text="Login" screen={() => navigate("Login")} />

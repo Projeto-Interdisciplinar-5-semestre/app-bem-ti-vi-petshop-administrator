@@ -23,13 +23,13 @@ const Stack = createNativeStackNavigator();
 type RootStackParamList = {
     Home: undefined;
     CreateProduct: undefined;
-    ManageProduct: undefined;
+    ManageProduct: { id : string};
     SearchProduct: undefined;
     CreateService: undefined;
-    ManageService: undefined;
+    ManageService: { id : string};
     SearchService: undefined;
     CreateCategory: undefined;
-    ManageCategory: undefined;
+    ManageCategory: { id : string};
     SearchCategory: undefined;
     Login: undefined;
 };

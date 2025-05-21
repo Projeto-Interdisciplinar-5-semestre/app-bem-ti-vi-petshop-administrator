@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Alert, ScrollView, SafeAreaView } from 'react-native';
 
-import ImagePicker from "expo-image-picker";
+import * as ImagePicker from "expo-image-picker";
 
 import { Title } from "../../components/Title";
 import { NavigationBar } from "../../components/NavigationBar";
@@ -10,8 +10,13 @@ import { FormCategory } from "../../components/Forms/FormCategory";
 
 import { styles } from "./style";
 
+import { postCategory } from "../../api/category/create/createCategory";
+import ColorPickerModal from "../../components/ColorPickerModal";
+
 export const CreateCategory = () => {
     const [nomeCategoria, setNomeCategoria] = useState<string>("");
+    const [corCard, setCorCard] = useState<string>("#8b5cf6");
+    const [colorModalVisible, setColorModalVisible] = useState(false);
     const [imagem, setImagem] = useState<string | null>(null);
 
     const selecionarImagem = async () => {
@@ -34,57 +39,25 @@ export const CreateCategory = () => {
         }
     };
 
-    const handleSubmit = async () => {
-        if (!nomeCategoria.trim() || !imagem) {
-            Alert.alert("Erro", "Preencha todos os campos!");
-            return;
-        }
-
+    const handlePost = async () => {
+        const categoria = {
+            name: nomeCategoria,
+            cardColor: corCard,
+        };
+    
         try {
-            const formData = new FormData();
-
-            formData.append("category", {
-                uri: `data:application/json;base64,${btoa(
-                    JSON.stringify({
-                        name: nomeCategoria,
-                        cardColor: "#FF00FF05",
-                    })
-                )}`,
-                type: "application/json",
-                name: "category.json",
-            } as any);
-
-            formData.append("file", {
-                uri: imagem,
-                type: "image/jpeg",
-                name: "categoria.jpg",
-            } as any);
-
-            const response = await fetch(
-                "http://URL:8080/categoria/inserir",
-                {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                        Accept: "application/json",
-                    },
-                }
-            );
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Erro no response:", errorText);
-                throw new Error("Erro ao cadastrar categoria");
+            const success = await postCategory(categoria, imagem);
+            if (success) {
+                setNomeCategoria('')
+                setCorCard('#8b5cf6')
+                setImagem(null)
+                Alert.alert('Sucesso!', 'A categoria foi cadastrada.')
             }
-
-            Alert.alert("Sucesso", "Categoria cadastrada!");
-            setNomeCategoria("");
-            setImagem(null);
-        } catch (error: any) {
-            console.error("Erro detalhado:", error);
-            Alert.alert("Erro", error.message || "Falha ao cadastrar");
+        } catch (error) {
+            console.error('POST request failed:', error);
+            Alert.alert('Erro', 'Não foi possível cadastrar a categoria.');
         }
-    };
+        };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -103,13 +76,29 @@ export const CreateCategory = () => {
                     image2={imagem}
                     selectImage2={selecionarImagem}
                 />
+                <View style={{ marginVertical: 20 }}>
+                    <Button
+                        icon={require('../../assets/icons/edit.png')}
+                        text="  Escolher cor"
+                        color={corCard}
+                        action={() => setColorModalVisible(true)}
+                    />
+                </View>
 
                 <View style={styles.buttonsContainer}>
-                    <Button icon={require('../../assets/icons/add.png')} text="CADASTRAR SERVIÇO" color="#006316" action={handleSubmit} />
+                    <Button icon={require('../../assets/icons/add.png')} text="CADASTRAR SERVIÇO" color="#006316" action={handlePost} />
                 </View>
             </ScrollView>
-
-            <NavigationBar />
+            <ColorPickerModal
+                visible={colorModalVisible}
+                initialColor={corCard}
+                onClose={() => setColorModalVisible(false)}
+                onColorSelect={(corSelecionada: string) => {
+                    setCorCard(corSelecionada);
+                    setColorModalVisible(false);
+                }}
+            />
+            <NavigationBar initialTab="categorias"/>
         </SafeAreaView>
     );
 };

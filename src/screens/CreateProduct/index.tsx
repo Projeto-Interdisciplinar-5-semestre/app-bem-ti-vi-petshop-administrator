@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Alert, ScrollView, SafeAreaView } from 'react-native';
-import ImagePicker from 'expo-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 import { Title } from '../../components/Title';
 import { NavigationBar } from '../../components/NavigationBar';
@@ -9,26 +9,23 @@ import { FormProduct } from '../../components/Forms/FormProduct';
 
 import { styles } from './style';
 
+import { postProduct } from '../../api/product/create/createProduct';
+import { listCategory } from '../../api/category/search/listCategory';
+
 type CategoriaType = {
-	label: string;
+	nome: string;
 	value: string;
 };
 
-const categorias: CategoriaType[] = [
-	{ label: '', value: '' },
-	{ label: 'Alimentos', value: 'Alimentos' },
-	{ label: 'Beleza', value: 'Beleza' },
-	{ label: 'Limpeza', value: 'Limpeza' },
-	{ label: 'Farmácia', value: 'Farmácia' },
-	{ label: 'Brinquedos', value: 'Brinquedos' },
-];
 
 export const CreateProduct = () => {
 	const [categoria, setCategoria] = useState<string>('');
 	const [nomeProduto, setNomeProduto] = useState<string>('');
 	const [valorProduto, setValorProduto] = useState<string>('');
-	const [descricao, setDescricao] = useState<string>('');
+	const [descricaoProduto, setDescricaoProduto] = useState<string>('');
 	const [imagem, setImagem] = useState<string | null>(null);
+	const [categorias, setCategorias] = useState<CategoriaType[]>([]);
+
 
 	const selecionarImagem = async () => {
 		const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -49,6 +46,43 @@ export const CreateProduct = () => {
 			setImagem(result.assets[0].uri);
 		}
 	};
+
+	useEffect(() => {
+		async function carregarCategorias() {
+			try {
+				const categoriasFormatadas = await listCategory();
+				setCategorias(categoriasFormatadas);
+			} catch (error) {
+				console.error('Erro ao carregar categorias:', error);
+			}
+		}
+		carregarCategorias();
+	}, []);
+
+
+	const handlePost = async () => {
+		const produto = {
+			name: nomeProduto,
+			price: valorProduto,
+			description: descricaoProduto,
+			categories: [{id: categoria,}],
+		};
+
+      	try {
+			const success = await postProduct(produto, imagem);
+			if (success) {
+				setCategoria('')
+				setNomeProduto('')
+				setValorProduto('')
+				setDescricaoProduto('')
+				setImagem(null)
+				Alert.alert('Sucesso!', 'O produto foi cadastrado.')
+			}
+    	} catch (error) {
+			console.error('POST request failed:', error);
+			Alert.alert('Erro', 'Não foi possível cadastrar o produto.');
+		}
+    };
 
 	return (
 		<SafeAreaView style={styles.safeArea}>
@@ -74,24 +108,24 @@ export const CreateProduct = () => {
 					setCategory3={setCategoria}
 					categories3={categorias}
 
-					label4="Imagem do Serviço"
+					label4="Imagem do Produto"
 					image4={imagem}
 					selectImage4={selecionarImagem}
 
 
-					label5="Descrição do Serviço"
-					placeholder5="Descreva o serviço em detalhes"
+					label5="Descrição do Produto"
+					placeholder5="Descreva o produto em detalhes"
 					keyboardType5="default"
-					value5={descricao}
-					onChangeText5={setDescricao}
+					value5={descricaoProduto}
+					onChangeText5={setDescricaoProduto}
 				/>
 
 				<View style={styles.buttonsContainer}>
-					<Button icon={require('../../assets/icons/add.png')} text="CADASTRAR SERVIÇO" color="#006316" action={() => { }}  />	
+					<Button icon={require('../../assets/icons/add.png')} text="CADASTRAR PRODUTO" color="#006316"  action={handlePost}  />	
 				</View>
 			</ScrollView>
 
-			<NavigationBar />
+			<NavigationBar initialTab='loja'/>
 		</SafeAreaView>
 	);
 };
