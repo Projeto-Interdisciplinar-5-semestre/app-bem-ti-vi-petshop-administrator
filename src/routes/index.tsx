@@ -1,9 +1,12 @@
-import React from 'react'
+import React from 'react';
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator, NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Home } from '../screens/Home';
 import { Header } from '../components/Header';
+import { ShowProfile } from '../screens/ShowProfile';
+import { ListAdmScreen } from '../screens/ListAdmScreen';
+
 
 import { CreateProduct } from '../screens/CreateProduct';
 import ManageProduct from '../screens/ManageProduct';
@@ -22,6 +25,8 @@ const Stack = createNativeStackNavigator();
 
 type RootStackParamList = {
     Home: undefined;
+    ShowProfile: undefined;
+    ListAdm: undefined;
     CreateProduct: undefined;
     ManageProduct: { id : string};
     SearchProduct: undefined;
@@ -34,7 +39,7 @@ type RootStackParamList = {
     Login: undefined;
 };
 
-export type NavigationProps = NativeStackNavigationProp<RootStackParamList, "Home">;
+export type NavigationProps = NativeStackNavigationProp<RootStackParamList>;
 
 export default function AppRoute() {
     return (
@@ -45,6 +50,20 @@ export default function AppRoute() {
                     component={Home} 
                     options={() => ({
                         header: () => <Header activateBackButton={false} title="INÍCIO" icon={require('../assets/images/cachorro.png')} />
+                    })}
+                />
+                <Stack.Screen 
+                    name='ShowProfile' 
+                    component={ShowProfile} 
+                    options={() => ({
+                        header: () => <Header activateBackButton={true} title="PERFIL" icon={require('../assets/images/perfil.png')} />
+                    })}
+                />
+                <Stack.Screen 
+                    name='ListAdm' 
+                    component={ListAdmScreen} 
+                    options={() => ({
+                        header: () => <Header activateBackButton={true} title="ADMINISTRADORES" icon={require('../assets/images/adms.png')} />
                     })}
                 />
                 <Stack.Screen 
@@ -79,45 +98,17 @@ export default function AppRoute() {
                     name='ManageService' 
                     component={ManageService} 
                     options={() => ({
-                        header: () => <Header activateBackButton={true} title="GERENCIAR" icon={require('../assets/images/cachorro.png')} />
+                        header: () => <Header activateBackButton={true} title="PERFIL" icon={require('../assets/images/perfil.png')} />
                     })}
                 />
                 <Stack.Screen 
-                    name='SearchService' 
-                    component={SearchService} 
+                    name='CreateProduct' 
+                    component={CreateProduct} 
                     options={() => ({
-                        header: () => <Header activateBackButton={true} title="SERVIÇOS" icon={require('../assets/images/cachorro.png')} />
-                    })}
-                />
-                <Stack.Screen 
-                    name='CreateCategory' 
-                    component={CreateCategory} 
-                    options={() => ({
-                        header: () => <Header activateBackButton={true} title="CADASTRAR" icon={require('../assets/images/categorias.png')} />
-                    })}
-                />
-                <Stack.Screen 
-                    name='ManageCategory' 
-                    component={ManageCategory} 
-                    options={() => ({
-                        header: () => <Header activateBackButton={true} title="GERENCIAR" icon={require('../assets/images/categorias.png')} />
-                    })}
-                />
-                <Stack.Screen 
-                    name='SearchCategory' 
-                    component={SearchCategory} 
-                    options={() => ({
-                        header: () => <Header activateBackButton={true} title="CATEGORIAS" icon={require('../assets/images/categorias.png')} />
-                    })}
-                />
-                <Stack.Screen 
-                    name='Login' 
-                    component={Login} 
-                    options={() => ({
-                        header: () => <></>
+                        header: () => <Header activateBackButton={true} title="CADASTRAR" icon={require('../assets/images/icone-menu.png')} />
                     })}
                 />
             </Stack.Navigator>
         </NavigationContainer>
-    )
+    );
 }

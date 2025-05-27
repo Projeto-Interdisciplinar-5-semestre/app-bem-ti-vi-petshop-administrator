@@ -1,13 +1,11 @@
-import React from "react"
-import { Text, TouchableOpacity, View } from "react-native"
-import { useNavigation } from "@react-navigation/native"
-
-import { NavigationProps } from "../../routes"
-
-import { styles } from "./style"
+import React from "react";
+import { Text, TouchableOpacity, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NavigationProps } from "../../routes";
+import { styles } from "./style";
 
 export const Home = () => {
-    const { navigate } = useNavigation<NavigationProps>()
+    const { navigate } = useNavigation<NavigationProps>();
 
     return (
         <View style={styles.screen}>
@@ -23,15 +21,21 @@ export const Home = () => {
             {/* <Button text="Gerenciar categoria" screen={() => navigate("ManageCategory")} /> */}
             <Button text="Pesquisar categoria" screen={() => navigate("SearchCategory")} />
 
-            <Button text="Login" screen={() => navigate("Login")} />
+            {/* Login Button */}
+            <Button text="Login" onPress={() => navigate("Login")} />
         </View>
-    )
+    );
+};
+
+interface ButtonProps {
+    text: string;
+    onPress: () => void;
 }
 
-function Button(props: any) {
+function Button({ text, onPress }: ButtonProps) {
     return (
-        <TouchableOpacity style={styles.button} onPress={props.screen}>
-            <Text style={styles.buttonText}>{props.text}</Text>
+        <TouchableOpacity style={styles.button} onPress={onPress}>
+            <Text style={styles.buttonText}>{text}</Text>
         </TouchableOpacity>
-    )
+    );
 }

@@ -32,13 +32,14 @@ export const styles = StyleSheet.create({
         fontFamily: 'Montserrat-Black',
         fontSize: 18,
         color: '#333',
-        marginRight: 8
+        marginRight: 4
     },
 
     menuIcon: {
         width: 24,
         height: 24,
-        resizeMode: 'contain'
+        resizeMode: 'contain',
+        marginBottom: 4
     },
 
     backIcon: {
