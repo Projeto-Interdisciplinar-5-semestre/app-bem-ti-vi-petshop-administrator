@@ -1,51 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, SafeAreaView } from 'react-native';
+import { ScrollView, SafeAreaView, View } from 'react-native';
 
 import { NavigationBar } from '../../components/NavigationBar';
 import { SearchInput } from '../../components/SearchInput';
 import { Button } from '../../components/Button';
 import { ListProduct } from '../../components/ListItems/ListProduct';
+import { PaginationControls } from '../../components/PaginationControls';
 
 import { styles } from './style';
 
+import { searchProduct } from '../../api/product/search/searchProduct';
+import { useNavigation } from '@react-navigation/native';
+import { NavigationProps } from '../../routes/index';
+
 type ProdutoType = {
     id: number;
-    nome: string;
-    categoria: string;
-    valor: string;
+    name: string;
+    category: string;
+    price: string;
 };
 
+
 export const SearchProduct = () => {
+    const { navigate } = useNavigation<NavigationProps>();
     const [searchText, setSearchText] = useState('');
+    const [pageIndex, setPageIndex] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
     const [produtos, setProdutos] = useState<ProdutoType[]>([]);
 
     const filteredProdutos = produtos.filter(produto =>
-        produto.nome.toLowerCase().includes(searchText.toLowerCase()) ||
-        produto.categoria.toLowerCase().includes(searchText.toLowerCase())
+        produto.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        produto.category.toLowerCase().includes(searchText.toLowerCase())
     );
     
     useEffect(() => {
-        const fetchProdutos = async () => {
-            try {
-                const response = await fetch('http://URL:8080/produto/paginacao?isActive=true&pageSize=5&page=0');
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
-
-                const data = await response.json();
-                const produtosFormatados = data.content.map((item: any) => ({
-                    id: item.id,
-                    nome: item.name || 'Nome não disponível',
-                    categoria: item.categories?.[0]?.name || 'Sem categoria',
-                    valor: item.price ? `R$${item.price.toFixed(2).replace('.', ',')}` : 'R$0,00',
-                }));
-                setProdutos(produtosFormatados)
-            } catch (err) {
-                console.error('Erro ao buscar produtos:', err);
+        const delayDebounce = setTimeout(() => {
+            async function carregarProdutos() {
+                const data = await searchProduct(searchText, pageIndex);
+                setProdutos(data?.produtos || []);
+                setTotalPages(data?.totalDePaginas || []);
             }
-        }
-        fetchProdutos()
-    })
+
+            carregarProdutos();
+        }, 750);
+
+        return () => clearTimeout(delayDebounce);
+    }, [searchText,pageIndex]);
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -55,7 +55,7 @@ export const SearchProduct = () => {
                     icon={require('../../assets/images/add.png')} 
                     text="CADASTRAR" 
                     color="#256489" 
-                    action={() => {}} 
+                    action={() => navigate('CreateProduct')} 
                 />
 
                 <SearchInput
@@ -65,9 +65,17 @@ export const SearchProduct = () => {
                 />
 
                 <ListProduct filteredItems={filteredProdutos} />
+
+               <PaginationControls 
+                    pageIndex={pageIndex}
+                    totalPages={totalPages}
+                    onNext={()=>setPageIndex(prev => prev + 1)}
+                    onPrev={()=>setPageIndex(prev => prev - 1)}
+               />
+               
             </ScrollView>
 
-            <NavigationBar />
+            <NavigationBar initialTab='loja'/>
         </SafeAreaView>
     );
 };

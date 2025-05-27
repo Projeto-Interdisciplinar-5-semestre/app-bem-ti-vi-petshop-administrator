@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Alert, ScrollView, SafeAreaView } from 'react-native';
 
-import ImagePicker from 'expo-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 import { Title } from '../../components/Title';
 import { Button } from '../../components/Button';
@@ -9,15 +9,24 @@ import { NavigationBar } from '../../components/NavigationBar';
 import { FormService } from '../../components/Forms/FormService';
 
 import { styles } from './style';
+import { searchServiceById } from '../../api/service/search/searchServiceById';
+import { deleteService } from '../../api/service/delete/deleteService';
+import { updateService } from '../../api/service/update/updateService';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { NavigationProps } from '../../routes/index';
+
 
 export default function ManageService() {
+    const { navigate } = useNavigation<NavigationProps>();
+    const route = useRoute();
+    const { id: serviceId } = route.params as { id: string };
+
     const [nomeServico, setNomeServico] = useState<string>('');
     const [descricaoServico, setDescricaoServico] = useState<string>('');
     const [precoServico, setPrecoServico] = useState<string>('');
     const [duracaoEstimada, setDuracaoEstimada] = useState<string>('');
     const [imagem, setImagem] = useState<string | null>(null);
 
-    const serviceId = "id";
 
     const selecionarImagem = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -41,17 +50,16 @@ export default function ManageService() {
     useEffect(() => {
         const buscarServico = async () => {
             try {
-                const resposta = await fetch(`http://URL:8080/service/${serviceId}/buscar`);
-                if (!resposta.ok) {
+                const data = await searchServiceById( serviceId );
+                if (!data) {
                     throw new Error('Erro ao buscar servico');
                 }
 
-                const servico = await resposta.json();
-                setNomeServico(servico.name || '');
-                setPrecoServico(String(servico.price) || '');
-                setDescricaoServico(servico.description || '');
-                setDuracaoEstimada(servico.estimated_duration || '');
-                setImagem(servico.pathImage);
+                setNomeServico(data.name);
+                setPrecoServico(String(data.price));
+                setDescricaoServico(data.description);
+                setDuracaoEstimada(data.estimated_duration);
+                setImagem(data.pathImage);
             } catch (erro) {
                 console.error('Erro ao buscar servico:', erro);
                 Alert.alert('Erro', 'Não foi possível carregar os dados do serviço.');
@@ -59,14 +67,14 @@ export default function ManageService() {
         };
 
         buscarServico();
-    }, []);
+    },[serviceId]);
 
-    const atualizarServico = async () => {
-        if (!nomeServico || !imagem) {
-            Alert.alert("Campos obrigatórios", "Preencha todos os campos antes de atualizar.");
-            return;
+    const handleUpdate = async () => {
+        if (!nomeServico || !precoServico || !duracaoEstimada || !descricaoServico) {
+                Alert.alert("Campos obrigatórios", "Preencha todos os campos antes de atualizar.");
+                return;
         }
-
+        
         const servico = {
             name: nomeServico,
             price: precoServico,
@@ -74,66 +82,49 @@ export default function ManageService() {
             description: descricaoServico
         };
 
-        const formData = new FormData();
-
-        formData.append('service', {
-            string: JSON.stringify(servico),
-            name: 'service',
-            type: 'application/json',
-        } as any);
-
-        formData.append('file', {
-            uri: imagem,
-            name: 'imagem.jpg',
-            type: 'image/jpeg',
-        } as any);
-
         try {
-            const response = await fetch(`http://URL:8080/service/${serviceId}/atualizar`, {
-                method: 'PUT',
-                body: formData,
-            });
+            const success = await updateService(servico, imagem, serviceId);
 
-            if (response.ok) {
-                Alert.alert("Sucesso", "Serviço atualizado com sucesso!");
-            } else {
-                const error = await response.json();
-                Alert.alert("Erro", error.message || "Erro ao atualizar o serviço.");
+            if (success){
+                Alert.alert('Sucesso!', 'O serviço foi atualizado.');
+                navigate('SearchService')
             }
+            
         } catch (error) {
-            Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+            console.error('UPDATE request failed:', error);
+            Alert.alert('Erro', 'Falha ao atualizar o serviço.');
         }
-    };
+    }
 
-    const deletarServico = async () => {
+    const handleDelete = async () => {
         Alert.alert(
             'Confirmação',
-            'Tem certeza que deseja deletar este serviço?',
+            'Tem certeza que deseja excluir este serviço?',
             [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Deletar',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            const response = await fetch(`http://URL:8080/service/${serviceId}/deletar`, {
-                                method: 'DELETE',
-                            });
-
-                            if (response.ok) {
-                                Alert.alert('Sucesso', 'Serviço deletado com sucesso!');
-                            } else {
-                                const erro = await response.json();
-                                Alert.alert('Erro', erro.message || 'Erro ao deletar o serviço.');
-                            }
-                        } catch (error) {
-                            Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
-                        }
-                    },
+                { text: 'Cancelar', style: 'cancel' }, 
+                { 
+                    text: 'Excluir',
+                    style: 'destructive', 
+                    onPress: () => confirmDelete(serviceId),
                 },
             ]
         );
-    };
+    }
+
+    const confirmDelete = async (serviceId: string) => {
+    try {
+        const success = await deleteService(serviceId);
+        
+        if (success) {
+            Alert.alert('Sucesso!', 'O serviço foi excluído.');
+            navigate('SearchService')
+        }
+
+    } catch (error) {
+        console.error('Erro ao excluir:', error);
+        Alert.alert('Erro', 'Não foi possível excluir o serviço.');
+    }
+};
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -173,12 +164,12 @@ export default function ManageService() {
                 />
 
                 <View style={styles.buttonsContainer}>
-                    <Button icon={require('../../assets/icons/delete.png')} text="DELETAR" color="#B40000" action={deletarServico} />
-                    <Button icon={require('../../assets/icons/edit.png')} text="ATUALIZAR" color="#006516" action={atualizarServico} />
+                    <Button icon={require('../../assets/icons/delete.png')} text="DELETAR" color="#B40000" action={handleDelete} />
+                    <Button icon={require('../../assets/icons/edit.png')} text="ATUALIZAR" color="#006516" action={handleUpdate} />
                 </View>
             </ScrollView>
 
-            <NavigationBar />
+            <NavigationBar initialTab='servicos'/>
         </SafeAreaView>
     );
 };

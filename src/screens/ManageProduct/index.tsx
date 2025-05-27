@@ -1,37 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { View, Alert, ScrollView, SafeAreaView } from 'react-native';
 
-import ImagePicker from 'expo-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 import { Title } from '../../components/Title';
 import { Button } from '../../components/Button';
 import { NavigationBar } from '../../components/NavigationBar';
 import { FormProduct } from '../../components/Forms/FormProduct';
+import { searchProductById } from '../../api/product/search/searchProductById';
+import { deleteProduct } from '../../api/product/delete/deleteProduct';
+import { updateProduct } from '../../api/product/update/updateProduct';
+import { listCategory } from '../../api/category/search/listCategory';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { NavigationProps } from '../../routes/index';
 
 import { styles } from './style';
 
 type CategoriaType = {
-    label: string;
+    nome: string;
     value: string;
 };
 
 export default function ManageProduct() {
+    const { navigate } = useNavigation<NavigationProps>();
+    const route = useRoute();
+    const { id: productId } = route.params as { id: string };
+
     const [categoria, setCategoria] = useState<string>('');
     const [nomeProduto, setNomeProduto] = useState<string>('');
     const [valorProduto, setValorProduto] = useState<string>('');
     const [descricao, setDescricao] = useState<string>('');
     const [imagem, setImagem] = useState<string | null>(null);
+    const [categorias, setCategorias] = useState<CategoriaType[]>([]);
 
-    const productId = "id";
-
-    const categorias: CategoriaType[] = [
-        { label: '', value: '' },
-        { label: 'Alimentos', value: 'id' },
-        { label: 'Beleza', value: 'Beleza' },
-        { label: 'Limpeza', value: 'Limpeza' },
-        { label: 'Farmácia', value: 'Farmácia' },
-        { label: 'Brinquedos', value: 'Brinquedos' },
-    ];
 
     const selecionarImagem = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -52,20 +53,23 @@ export default function ManageProduct() {
             setImagem(result.assets[0].uri);
         }
     };
+     
+
     useEffect(() => {
         const buscarProduto = async () => {
             try {
-                const resposta = await fetch(`http://URL:8080/produto/${productId}/buscar`);
-                if (!resposta.ok) {
+                const data = await searchProductById(productId);
+                if (!data) {
                     throw new Error('Erro ao buscar produto');
                 }
 
-                const produto = await resposta.json();
-                setNomeProduto(produto.name || '');
-                setValorProduto(String(produto.price) || '');
-                setDescricao(produto.description || '');
-                setCategoria(produto.categories?.[0]?.id || '');
-                setImagem(produto.pathImage);
+                const categoriasFormatadas = await listCategory();
+                setCategorias(categoriasFormatadas);
+                setNomeProduto(data.name);
+                setValorProduto(String(data.price));
+                setDescricao(data.description);
+                setCategoria(data.categories?.[0]?.id);
+                setImagem(data.pathImage);
             } catch (erro) {
                 console.error('Erro ao buscar produto:', erro);
                 Alert.alert('Erro', 'Não foi possível carregar os dados do produto.');
@@ -73,9 +77,9 @@ export default function ManageProduct() {
         };
 
         buscarProduto();
-    }, []);
+    }, [productId]);
 
-    const atualizarProduto = async () => {
+    const handleUpdate = async () => {
         if (!nomeProduto || !valorProduto || !descricao || !categoria) {
             Alert.alert("Campos obrigatórios", "Preencha todos os campos antes de atualizar.");
             return;
@@ -85,72 +89,54 @@ export default function ManageProduct() {
             name: nomeProduto,
             price: parseFloat(valorProduto),
             categories: [
-                { id: "id" }
+                { id: categoria }
             ],
             description: descricao,
         };
 
-        const formData = new FormData();
-
-        formData.append('product', {
-            string: JSON.stringify(produto),
-            name: 'product',
-            type: 'application/json',
-        } as any);
-
-        formData.append('file', {
-            uri: imagem,
-            name: 'imagem.jpg',
-            type: 'image/jpeg',
-        } as any);
-
         try {
-            const response = await fetch(`http://URL:8080/produto/${productId}/atualizar`, {
-                method: 'PUT',
-                body: formData,
-            });
+            const success = await updateProduct( produto, imagem, productId )
 
-            if (response.ok) {
-                Alert.alert("Sucesso", "Produto atualizado com sucesso!");
-            } else {
-                const error = await response.json();
-                Alert.alert("Erro", error.message || "Erro ao atualizar o produto.");
+            if (success) {
+                Alert.alert("Sucesso!", "O produto foi atualizado.");
+                navigate('SearchProduct')
             }
+
         } catch (error) {
-            Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+            console.error('UPDATE request failed:', error);
+            Alert.alert('Erro!', 'Falha ao atualizar o produto.');
         }
     };
 
-    const deletarProduto = async () => {
+    const handleDelete = async () => {
         Alert.alert(
             'Confirmação',
-            'Tem certeza que deseja deletar este produto?',
+            'Tem certeza que deseja excluir este produto?',
             [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Deletar',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            const response = await fetch(`http://URL:8080/produto/${productId}/deletar`, {
-                                method: 'DELETE',
-                            });
-
-                            if (response.ok) {
-                                Alert.alert('Sucesso', 'Produto deletado com sucesso!');
-                            } else {
-                                const erro = await response.json();
-                                Alert.alert('Erro', erro.message || 'Erro ao deletar o produto.');
-                            }
-                        } catch (error) {
-                            Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
-                        }
-                    },
+                { text: 'Cancelar', style: 'cancel' }, 
+                { 
+                    text: 'Excluir',
+                    style: 'destructive', 
+                    onPress: () => confirmDelete(productId),
                 },
             ]
         );
     };
 
+    const confirmDelete = async (productId: string) => {
+        try {
+            const success = await deleteProduct(productId);
+            
+            if (success) {
+                Alert.alert('Sucesso!', 'O produto foi excluído.');
+                navigate('SearchProduct')
+            }
+
+        } catch (error) {
+            console.error('Erro ao excluir:', error);
+            Alert.alert('Erro', 'Não foi possível excluir o produto.');
+        }
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -189,12 +175,12 @@ export default function ManageProduct() {
                 />
 
                 <View style={styles.buttonsContainer}>
-                    <Button icon={require('../../assets/icons/delete.png')} text="DELETAR" color="#B40000" action={deletarProduto} />
-                    <Button icon={require('../../assets/icons/edit.png')} text="ATUALIZAR" color="#006516" action={atualizarProduto} />
+                    <Button icon={require('../../assets/icons/delete.png')} text="DELETAR" color="#B40000" action={handleDelete} />
+                    <Button icon={require('../../assets/icons/edit.png')} text="ATUALIZAR" color="#006516" action={handleUpdate} />
                 </View>
             </ScrollView>
 
-            <NavigationBar />
+            <NavigationBar initialTab='loja'/>
         </SafeAreaView>
     );
 };

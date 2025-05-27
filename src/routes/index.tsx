@@ -29,13 +29,13 @@ type RootStackParamList = {
     ListAdm: undefined;
     ManageProfile: undefined;
     CreateProduct: undefined;
-    ManageProduct: undefined;
+    ManageProduct: { id : string};
     SearchProduct: undefined;
     CreateService: undefined;
-    ManageService: undefined;
+    ManageService: { id : string};
     SearchService: undefined;
     CreateCategory: undefined;
-    ManageCategory: undefined;
+    ManageCategory: { id : string};
     SearchCategory: undefined;
     Login: undefined;
 };
@@ -75,6 +75,7 @@ export default function AppRoute() {
                     })}
                 />
                 <Stack.Screen 
+
                     name='CreateProduct' 
                     component={CreateProduct} 
                     options={() => ({
@@ -106,42 +107,14 @@ export default function AppRoute() {
                     name='ManageService' 
                     component={ManageService} 
                     options={() => ({
-                        header: () => <Header activateBackButton={true} title="GERENCIAR" icon={require('../assets/images/cachorro.png')} />
+                        header: () => <Header activateBackButton={true} title="PERFIL" icon={require('../assets/images/perfil.png')} />
                     })}
                 />
                 <Stack.Screen 
-                    name='SearchService' 
-                    component={SearchService} 
+                    name='CreateProduct' 
+                    component={CreateProduct} 
                     options={() => ({
-                        header: () => <Header activateBackButton={true} title="SERVIÇOS" icon={require('../assets/images/cachorro.png')} />
-                    })}
-                />
-                <Stack.Screen 
-                    name='CreateCategory' 
-                    component={CreateCategory} 
-                    options={() => ({
-                        header: () => <Header activateBackButton={true} title="CADASTRAR" icon={require('../assets/images/categorias.png')} />
-                    })}
-                />
-                <Stack.Screen 
-                    name='ManageCategory' 
-                    component={ManageCategory} 
-                    options={() => ({
-                        header: () => <Header activateBackButton={true} title="GERENCIAR" icon={require('../assets/images/categorias.png')} />
-                    })}
-                />
-                <Stack.Screen 
-                    name='SearchCategory' 
-                    component={SearchCategory} 
-                    options={() => ({
-                        header: () => <Header activateBackButton={true} title="CATEGORIAS" icon={require('../assets/images/categorias.png')} />
-                    })}
-                />
-                <Stack.Screen 
-                    name='Login' 
-                    component={Login} 
-                    options={() => ({
-                        header: () => <></>
+                        header: () => <Header activateBackButton={true} title="CADASTRAR" icon={require('../assets/images/icone-menu.png')} />
                     })}
                 />
             </Stack.Navigator>

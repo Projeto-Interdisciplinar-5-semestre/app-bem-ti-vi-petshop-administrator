@@ -9,26 +9,19 @@ export const Home = () => {
 
     return (
         <View style={styles.screen}>
-            {/* Product Buttons */}
-            <Button text="Cadastrar produto" onPress={() => navigate("CreateProduct")} />
-            <Button text="Gerenciar produto" onPress={() => navigate("ManageProduct")} />
-            <Button text="Pesquisar produto" onPress={() => navigate("SearchProduct")} />
 
-            {/* Service Buttons */}
-            <Button text="Cadastrar serviço" onPress={() => navigate("CreateService")} />
-            <Button text="Gerenciar serviço" onPress={() => navigate("ManageService")} />
-            <Button text="Pesquisar serviço" onPress={() => navigate("SearchService")} />
+            <Button text="Cadastrar produto" screen={() => navigate("CreateProduct")} />
+            {/* <Button text="Gerenciar produto" screen={() => navigate("ManageProduct")} /> */}
+            <Button text="Pesquisar produto" screen={() => navigate("SearchProduct")} />
 
-            {/* Category Buttons */}
-            <Button text="Cadastrar categoria" onPress={() => navigate("CreateCategory")} />
-            <Button text="Gerenciar categoria" onPress={() => navigate("ManageCategory")} />
-            <Button text="Pesquisar categoria" onPress={() => navigate("SearchCategory")} />
+            <Button text="Cadastrar serviço" screen={() => navigate("CreateService")} />
+            {/* <Button text="Gerenciar serviço" screen={() => navigate("ManageService")} /> */}
+            <Button text="Pesquisar serviço" screen={() => navigate("SearchService")} />
 
-            {/* Admin Buttons */}
-            <Button text="Perfil do Administrador" onPress={() => navigate("ShowProfile")} />
-            <Button text="Lista de Administradores" onPress={() => navigate("ListAdm")} />
-            <Button text="Gerenciar Perfil" onPress={() => navigate("ManageProfile")} />
-
+            <Button text="Cadastrar categoria" screen={() => navigate("CreateCategory")} />
+            {/* <Button text="Gerenciar categoria" screen={() => navigate("ManageCategory")} /> */}
+            <Button text="Pesquisar categoria" screen={() => navigate("SearchCategory")} />
+        
             {/* Login Button */}
             <Button text="Login" onPress={() => navigate("Login")} />
         </View>
